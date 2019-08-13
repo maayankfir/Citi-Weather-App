@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableHighlight} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableHighlight, StatusBar} from 'react-native';
 
 export default class App extends React.Component {
 
@@ -87,9 +87,17 @@ export default class App extends React.Component {
         list: [],
         refresh: true,
     }
-    // this.fetchCityTemp('London', 'uk')
-    var list = this.getRandome(this.state.cities, 5)
-    console.log(list);
+    this.fetchTemps()
+  }
+
+  fetchTemps = () => {
+    var newList = []
+    var list = this.getRandome(this.state.cities, 7)
+    for (city in list) {
+      var name = list[city].name
+      var country = list[city].country
+      this.fetchCityTemp(name, country, newList)
+    }
   }
 
   getRandome = (arr, n) => {
@@ -104,7 +112,15 @@ export default class App extends React.Component {
     return result
   }
 
-  fetchCityTemp = (city, country) => {
+  loadNewTemp = () => {
+    this.setState({
+      list: [],
+      refresh: true
+    })
+    this.fetchTemps()
+  }
+
+  fetchCityTemp = (city, country, newList) => {
       fetch('http://api.openweathermap.org/data/2.5/weather?q='+city+','+country+'&appid=b1194dcf0493aca39f7d01b606908a18&units=metric')
       .then((res) => res.json())
       .then((resJson) => {
@@ -116,17 +132,85 @@ export default class App extends React.Component {
           temp: Math.ceil(r.temp),
           type: obj.weather[0].main
         }
-        console.log(city);
+        newList.push(city)
+        this.setState({
+          list: newList,
+          refresh: false
+        })
       })
+  }
+
+  getTempRange = (temp) => {
+    if(temp < 11) {
+      return 1
+    } else if ( 10 < temp && temp < 20  ) {
+      return 2
+    } else if (19 < temp && temp < 30) {
+      return 3
+    } else {
+      return 4
+    }
   }
 
   render () {
     return (
-      <View>
-      <Text style ={{ marginTop: 50, textAlign: 'center', justifyContent: 'center',alignItems:'center', fontSize: 50}}>
-      Home Screen
-      </Text>
+      <View style ={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <Text style={{width: '100%', paddingTop: 40, paddingBottom: 15, backgroundColor: 'black', color:'white', textAlign:'center', fontWeight:'200', fontSize: 30}}> City Weather App</Text>
+      <FlatList style={{width: '100%'}}
+      data={this.state.list}
+      refreshing={this.state.refresh}
+      onRefresh={this.loadNewTemp}
+      keyExtractor={(item, index)=> index.toString()}
+      renderItem={({item, index}) => (
+      <View style={styles.row}>
+        <Text style={[
+          (this.getTempRange(item.temp) === 1) ? styles.cold : styles.temp,
+          (this.getTempRange(item.temp) === 2) ? styles.medium : styles.temp,
+          (this.getTempRange(item.temp) === 3) ? styles.hot : styles.temp,
+          (this.getTempRange(item.temp) === 4) ? styles.veryHot : styles.temp,
+          styles.temp]}> {item.temp}°C</Text>
+        <Text style={styles.cityName}>{item.name} </Text>
+      </View>
+      )}
+      />
       </View>
     )
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems:'center',
+    flex: 1
+  },
+  row: {
+    flex: 1,
+    paddingVertical: 25,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: 'white'
+  },
+  cityName: {
+    fontSize: 20,
+    lineHeight: 40,
+    fontFamily: 'Avenir'
+  },
+  temp: {
+    fontSize: 30,
+    lineHeight: 40,
+    width: 130,
+    marginRight: 15,
+    fontWeight: 'bold',
+    fontFamily: 'Avenir'
+  },
+  cold: {color: 'blue'},
+  medium: {color: 'green'},
+  hot: {color: 'orange'},
+  veryHot: {color: 'red'}
+
+})
