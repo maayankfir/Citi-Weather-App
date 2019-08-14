@@ -87,6 +87,7 @@ export default class App extends React.Component {
         ],
         list: [],
         refresh: true,
+        newAlert: 0
     }
     this.fetchTemps()
   }
@@ -132,7 +133,7 @@ export default class App extends React.Component {
           country: country,
           temp: Math.ceil(r.temp),
           type: obj.weather[0].main,
-          desc: 'Humidity: '+r.humidity+'% - '+obj.weather[0].main,
+          desc: 'Humidity 💦  '+r.humidity+'% || '+obj.weather[0].main,
         }
         newList.push(city)
         this.setState({
@@ -185,7 +186,7 @@ export default class App extends React.Component {
         renderItem={({item, index}) => (
       <TouchableHighlight
         underlayColor="white"
-        onPress={ () => alert(item.desc)}
+        onPress={ () => this.setState({newAlert: 1, alertMsg:item.desc})}
       >
         <LinearGradient
         colors= {['rgba(0,0,0,0.05)', 'rgba(0,0,0,0)']}
@@ -204,6 +205,31 @@ export default class App extends React.Component {
       </TouchableHighlight>
       )}
       />
+      {
+        this.state.newAlert == 1 ? (
+          <View style={{flex:1, justifyContent: 'center', alignItems: 'center', position: 'absolute', top: 0, left: 0, height:'100%', width:'100%', backgroundColor: 'rgba(0,0,0,0.5)'}}>
+            <View style={{width: '75%', height: 90}}>
+              <LinearGradient
+                style= {{
+                  padding:5,
+                  justifyContent: 'center', alignItems:'center', flex:1, borderRadius: 20}}
+                colors={['#136a8a', '#267871']}
+                start={[0,0.65]}
+              >
+              <Text style={{fontSize: 20, color:"white", padding: 10, textAlign:'center'}}>{this.state.alertMsg}</Text>
+              <TouchableHighlight
+                underlayColor="white"
+                onPress={()=> this.setState({alertMsg:'', newAlert:0})}
+              >
+              <Text>❌</Text>
+              </TouchableHighlight>
+            </LinearGradient>
+            </View>
+          </View>
+        ) : <View>
+        <Text style={{fontSize:20, paddingBottom: 40, fontWeight:'bold'}}>Click on city for more info 🔎</Text>
+        </View>
+      }
       </View>
     )
   }

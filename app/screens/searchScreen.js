@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { TextInput, View, Text, StyleSheet, FlatList, TouchableHighlight, StatusBar} from 'react-native';
+import { Dimensions, TextInput, View, Text, StyleSheet, FlatList, TouchableHighlight, StatusBar} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Font from 'expo-font';
+
 
 export default class App extends React.Component {
 
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flex: 1,
-    width: 400,
+    width: Dimensions.get('window').width,
     paddingVertical: 25,
     paddingHorizontal: 15,
     flexDirection: 'row',
